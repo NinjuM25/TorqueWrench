@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torque Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center elements horizontally */
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            margin-bottom: 10px;
+            color: #555;
+            align-self: center; /* Center labels horizontally */
+        }
+        input, button {
+            width: 80%; /* Adjust width as needed */
+            padding: 8px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+            text-align: center; /* Center text inside fields */
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            display: block;
+            width: 80%; /* Set width of the button */
+            margin-left: auto;
+            margin-right: auto; /* Center the button */
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 16px;
+            text-align: center;
+            font-weight: bold;
+            color: #333;
+            width: 100%; /* Align result text to the center of the container */
+        }
+        .hidden {
+            display: none;
+        }
+        .radio-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .password-container {
+            text-align: center;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        .password-container input {
+            width: 70%;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Password Entry Section -->
+    <div class="password-container" id="passwordSection">
+        <h2>Enter the Password</h2>
+        <input type="password" id="passwordInput" placeholder="Enter Password" />
+        <button onclick="checkPassword()">Submit</button>
+        <div id="passwordError" style="color: red; margin-top: 10px;"></div>
+    </div>
+
+    <!-- Torque Calculator Section (Hidden by default) -->
+    <div class="container" id="calculatorSection" style="display: none;">
+        <h2>Torque Calculator</h2>
+
+        <label>Select Type:</label>
+        <div class="radio-group">
+            <label>
+                <input type="radio" name="type" value="bolts" checked onchange="showFields()"> Bolts
+            </label>
+            <label>
+                <input type="radio" name="type" value="nuts" onchange="showFields()"> Nuts
+            </label>
+        </div>
+
+        <div id="boltFields">
+            <label for="boltDiameter">Bolt Diameter (mm):</label>
+            <input type="number" id="boltDiameter" placeholder="Enter Bolt Diameter">
+
+            <label for="boltLength">Bolt Length (mm):</label>
+            <input type="number" id="boltLength" placeholder="Enter Bolt Length">
+        </div>
+
+        <div id="nutFields" class="hidden">
+            <label for="nutDiameter">Nut Diameter (mm):</label>
+            <input type="number" id="nutDiameter" placeholder="Enter Nut Diameter">
+
+            <label for="nutThickness">Nut Thickness (mm):</label>
+            <input type="number" id="nutThickness" placeholder="Enter Nut Thickness">
+        </div>
+
+        <label>Lubrication Type:</label>
+        <div class="radio-group">
+            <label>
+                <input type="radio" name="lubrication" value="lubricated" checked> Lubricated (K=0.15)
+            </label>
+            <label>
+                <input type="radio" name="lubrication" value="dry"> Dry (K=0.25)
+            </label>
+        </div>
+
+        <button onclick="calculateTorque()">Calculate Torque</button>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        // Password validation function
+        function checkPassword() {
+            const enteredPassword = document.getElementById("passwordInput").value;
+            const correctPassword = "56672";
+
+            if (enteredPassword === correctPassword) {
+                document.getElementById("passwordSection").style.display = "none";
+                document.getElementById("calculatorSection").style.display = "block";
+            } else {
+                document.getElementById("passwordError").textContent = "Incorrect password. Please try again.";
+            }
+        }
+
+        // Function to toggle between bolt and nut fields
+        function showFields() {
+            const type = document.querySelector('input[name="type"]:checked').value;
+            const boltFields = document.getElementById("boltFields");
+            const nutFields = document.getElementById("nutFields");
+
+            if (type === "bolts") {
+                boltFields.classList.remove("hidden");
+                nutFields.classList.add("hidden");
+            } else if (type === "nuts") {
+                nutFields.classList.remove("hidden");
+                boltFields.classList.add("hidden");
+            }
+        }
+
+        // Function to calculate the torque
+        function calculateTorque() {
+            const type = document.querySelector('input[name="type"]:checked').value;
+            const lubrication = document.querySelector('input[name="lubrication"]:checked').value;
+
+            // Friction coefficient (K) based on lubrication type
+            const K = lubrication === "lubricated" ? 0.15 : 0.25;
+
+            let torque = 0;
+
+            if (type === "bolts") {
+                const diameter = parseFloat(document.getElementById("boltDiameter").value);
+                const length = parseFloat(document.getElementById("boltLength").value);
+
+                // Validate inputs
+                if (isNaN(diameter) || isNaN(length) || diameter <= 0 || length <= 0) {
+                    document.getElementById("result").textContent = "Please enter valid values for bolts!";
+                    return;
+                }
+
+                // Axial force calculation (custom logic)
+                const axialForce = 1000 * length; // Example: Axial force in N (based on length)
+                const diameterInMeters = diameter / 1000; // Convert mm to meters
+                torque = K * axialForce * diameterInMeters; // Torque formula
+
+            } else if (type === "nuts") {
+                const diameter = parseFloat(document.getElementById("nutDiameter").value);
+                const thickness = parseFloat(document.getElementById("nutThickness").value);
+
+                // Validate inputs
+                if (isNaN(diameter) || isNaN(thickness) || diameter <= 0 || thickness <= 0) {
+                    document.getElementById("result").textContent = "Please enter valid values for nuts!";
+                    return;
+                }
+
+                // Axial force calculation (custom logic)
+                const axialForce = 800 * thickness; // Example: Axial force in N (based on thickness)
+                const diameterInMeters = diameter / 1000; // Convert mm to meters
+                torque = K * axialForce * diameterInMeters; // Torque formula
+            }
+
+            // Display the result
+            document.getElementById("result").textContent = `Required Torque: ${torque.toFixed(2)} Nm`;
+        }
+    </script>
+
+</body>
+</html>
